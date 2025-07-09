@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="pt-br" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cortex - Central de Operações</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap');
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #111827; /* bg-gray-900 */
+        }
+    </style>
+</head>
+<body class="text-gray-200">
+
+    <div class="container mx-auto max-w-3xl p-4 md:p-8">
+        
+        <!-- Cabeçalho -->
+        <header class="mb-10 text-center">
+            <h1 class="text-4xl md:text-5xl font-bold text-white">Central de Operações</h1>
+            <p class="text-red-400 mt-2">Couto Industries - Protocolo de Execução</p>
+        </header>
+
+        <!-- Gerenciador de Tarefas -->
+        <main class="bg-gray-800 p-6 rounded-2xl shadow-2xl">
+            <h2 class="text-2xl font-bold text-white mb-4">Gerenciador de Tarefas</h2>
+            
+            <!-- Input para adicionar nova tarefa -->
+            <div class="flex gap-2 mb-6">
+                <input 
+                  type="text"
+                  id="task-input"
+                  class="flex-grow bg-gray-700 border border-gray-600 text-white text-sm rounded-lg focus:ring-red-500 focus:border-red-500 block w-full p-3"
+                  placeholder="Adicionar nova tarefa para hoje..."
+                />
+                <button 
+                  id="add-task-btn"
+                  class="bg-red-500 hover:bg-red-600 text-white font-bold py-3 px-6 rounded-lg transition-all duration-300"
+                >
+                  Adicionar
+                </button>
+            </div>
+
+            <!-- Lista de tarefas -->
+            <div id="task-list">
+                <!-- As tarefas serão inseridas aqui pelo JavaScript -->
+            </div>
+        </main>
+
+        <footer class="text-center mt-8 text-gray-500 text-sm">
+            <p>Cortex Productivity System v1.0</p>
+        </footer>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // --- ELEMENTOS DA DOM ---
+            const taskInput = document.getElementById('task-input');
+            const addTaskBtn = document.getElementById('add-task-btn');
+            const taskList = document.getElementById('task-list');
+
+            // --- ESTADO DA APLICAÇÃO ---
+            // Carrega as tarefas do localStorage ou começa com um array vazio.
+            let tasks = JSON.parse(localStorage.getItem('tasks')) || [];
+
+            // --- FUNÇÕES ---
+
+            // Função para salvar as tarefas no localStorage
+            const saveTasks = () => {
+                localStorage.setItem('tasks', JSON.stringify(tasks));
+            };
+
+            // Função para renderizar (desenhar) a lista de tarefas na tela
+            const renderTasks = () => {
+                taskList.innerHTML = ''; // Limpa a lista atual para evitar duplicatas
+
+                if (tasks.length === 0) {
+                    taskList.innerHTML = '<p class="text-gray-500 text-center mt-4">Nenhuma tarefa para hoje, Senhor.</p>';
+                    return;
+                }
+
+                tasks.forEach(task => {
+                    const taskElement = document.createElement('div');
+                    taskElement.className = `flex items-center justify-between bg-gray-700 p-3 rounded-lg mb-2 transition-all duration-300 ${task.completed ? 'opacity-50' : ''}`;
+                    
+                    taskElement.innerHTML = `
+                        <div class="flex items-center cursor-pointer" onclick="toggleTask(${task.id})">
+                            <div class="w-6 h-6 rounded-full border-2 ${task.completed ? 'border-green-500 bg-green-500' : 'border-gray-500'} mr-4 flex items-center justify-center">
+                                ${task.completed ? '<svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7" /></svg>' : ''}
+                            </div>
+                            <span class="text-lg ${task.completed ? 'line-through text-gray-500' : 'text-white'}">${task.text}</span>
+                        </div>
+                        <button onclick="deleteTask(${task.id})" class="text-gray-500 hover:text-red-500 transition-colors">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
+                        </button>
+                    `;
+                    taskList.appendChild(taskElement);
+                });
+            };
+
+            // Função para adicionar uma nova tarefa
+            const addTask = () => {
+                const taskText = taskInput.value.trim();
+                if (taskText === '') return;
+
+                const newTask = {
+                    id: Date.now(),
+                    text: taskText,
+                    completed: false
+                };
+
+                tasks.push(newTask);
+                taskInput.value = '';
+                saveTasks();
+                renderTasks();
+            };
+
+            // Função para marcar uma tarefa como concluída (ou não)
+            window.toggleTask = (id) => {
+                tasks = tasks.map(task => 
+                    task.id === id ? { ...task, completed: !task.completed } : task
+                );
+                saveTasks();
+                renderTasks();
+            };
+
+            // Função para deletar uma tarefa
+            window.deleteTask = (id) => {
+                tasks = tasks.filter(task => task.id !== id);
+                saveTasks();
+                renderTasks();
+            };
+
+            // --- EVENT LISTENERS ---
+            addTaskBtn.addEventListener('click', addTask);
+            taskInput.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') {
+                    addTask();
+                }
+            });
+
+            // --- INICIALIZAÇÃO ---
+            renderTasks();
+        });
+    </script>
+</body>
+</html>
+

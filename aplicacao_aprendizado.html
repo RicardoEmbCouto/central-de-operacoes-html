@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="pt-br" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Cortex Kids - Painel de Descobertas</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Fredoka+One&display=swap');
+        body {
+            font-family: 'Fredoka One', cursive;
+            -webkit-tap-highlight-color: transparent;
+        }
+        .card {
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+        .card:active {
+            transform: scale(0.95);
+            box-shadow: 0 0 30px rgba(255, 255, 255, 0.3);
+        }
+    </style>
+</head>
+<body class="bg-gray-900 flex items-center justify-center min-h-screen">
+
+    <div class="w-full max-w-2xl mx-auto p-4">
+        <h1 id="category-title" class="text-4xl text-center text-white mb-6">Animais</h1>
+        
+        <div id="card-grid" class="grid grid-cols-2 sm:grid-cols-3 gap-4">
+            <!-- Cards serão inseridos aqui pelo JavaScript -->
+        </div>
+
+        <div class="mt-8 text-center">
+            <button id="change-category-btn" class="bg-red-500 hover:bg-red-600 text-white font-bold py-3 px-8 rounded-full shadow-lg text-lg">
+                Mudar Categoria
+            </button>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const cardGrid = document.getElementById('card-grid');
+            const categoryTitle = document.getElementById('category-title');
+            const changeCategoryBtn = document.getElementById('change-category-btn');
+
+            // --- BANCO DE DADOS DE CONCEITOS ---
+            const categories = {
+                animais: {
+                    title: 'Animais',
+                    items: [
+                        { name: 'Cachorro', emoji: '🐶', color: 'bg-blue-500' },
+                        { name: 'Gato', emoji: '🐱', color: 'bg-orange-500' },
+                        { name: 'Leão', emoji: '🦁', color: 'bg-yellow-500' },
+                        { name: 'Macaco', emoji: '🐵', color: 'bg-amber-800' },
+                        { name: 'Vaca', emoji: '🐮', color: 'bg-gray-400' },
+                        { name: 'Sapo', emoji: '🐸', color: 'bg-green-500' },
+                    ]
+                },
+                cores: {
+                    title: 'Cores',
+                    items: [
+                        { name: 'Vermelho', emoji: '🔴', color: 'bg-red-500' },
+                        { name: 'Azul', emoji: '🔵', color: 'bg-blue-500' },
+                        { name: 'Amarelo', emoji: '🟡', color: 'bg-yellow-400' },
+                        { name: 'Verde', emoji: '🟢', color: 'bg-green-500' },
+                        { name: 'Laranja', emoji: '🟠', color: 'bg-orange-500' },
+                        { name: 'Roxo', emoji: '🟣', color: 'bg-purple-500' },
+                    ]
+                }
+            };
+
+            let currentCategory = 'animais';
+
+            // --- FUNÇÃO PARA FALAR O TEXTO ---
+            function speak(text) {
+                // Cancela qualquer fala anterior para evitar sobreposição
+                window.speechSynthesis.cancel();
+                
+                const utterance = new SpeechSynthesisUtterance(text);
+                utterance.lang = 'pt-BR';
+                utterance.rate = 1.0;
+                window.speechSynthesis.speak(utterance);
+            }
+
+            // --- FUNÇÃO PARA CRIAR OS CARDS ---
+            function createCards(category) {
+                cardGrid.innerHTML = ''; // Limpa o grid
+                categoryTitle.textContent = categories[category].title;
+
+                categories[category].items.forEach(item => {
+                    const card = document.createElement('div');
+                    card.className = `card ${item.color} rounded-2xl p-6 flex flex-col items-center justify-center aspect-square cursor-pointer shadow-lg`;
+                    
+                    const emoji = document.createElement('div');
+                    emoji.className = 'text-6xl sm:text-7xl';
+                    emoji.textContent = item.emoji;
+                    
+                    const name = document.createElement('div');
+                    name.className = 'mt-4 text-xl sm:text-2xl font-bold text-white text-center';
+                    name.textContent = item.name;
+
+                    card.appendChild(emoji);
+                    card.appendChild(name);
+
+                    card.addEventListener('click', () => {
+                        speak(item.name);
+                        // Efeito de "pop"
+                        card.style.transform = 'scale(0.95)';
+                        setTimeout(() => {
+                            card.style.transform = 'scale(1)';
+                        }, 150);
+                    });
+
+                    cardGrid.appendChild(card);
+                });
+            }
+
+            // --- FUNÇÃO PARA MUDAR DE CATEGORIA ---
+            changeCategoryBtn.addEventListener('click', () => {
+                currentCategory = currentCategory === 'animais' ? 'cores' : 'animais';
+                createCards(currentCategory);
+            });
+
+            // --- INICIALIZAÇÃO ---
+            createCards(currentCategory);
+        });
+    </script>
+</body>
+</html>
+
